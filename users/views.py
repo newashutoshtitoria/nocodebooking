@@ -49,14 +49,18 @@ class tenantuserSignup(APIView):
         schema_name = connection.schema_name
         with schema_context('public'):
             try:
-                check_user_tenant = User.objects.get(phone_number=request.data['phone_number']).tenant_user.first()
+                check_user = User.objects.get(phone_number=request.data['phone_number'])
             except:
-                check_user_tenant = None
-            if not check_user_tenant or check_user_tenant is None:
-                user_with_no_tenant = User.objects.get(phone_number=request.data['phone_number'])
-                user_with_no_tenant.delete()
+                check_user = None
 
 
+            if check_user or check_user is not None:
+                try:
+                    check_user_teanant = check_user.tenant_user
+                    return Response({'info': 'Already a User', 'user_id': check_user.id, 'name': check_user.name},
+                                    status=status.HTTP_201_CREATED)
+                except:
+                    check_user.delete()
             serializer = TenantUserSignupSerializer(data=request.data)
             if serializer.is_valid(raise_exception=True):
                 phone_number = serializer.validated_data['phone_number']
@@ -64,11 +68,13 @@ class tenantuserSignup(APIView):
                 password = serializer.validated_data['password']
 
                 user = User.objects.create_public_user(phone_number=phone_number, name=name, password=password)
-                msg_thread = Thread(target=sendotp,args=(user,schema_name))
+                msg_thread = Thread(target=sendotp, args=(user, schema_name))
                 msg_thread.start()
                 user.save()
-                return Response({'info': 'Successfully signed-up', 'user_id': user.id, 'name': name}, status=status.HTTP_201_CREATED)
-        raise ValidationError({'error': 'Invalid User'})
+                return Response({'info': 'Successfully signed-up', 'user_id': user.id, 'name': name},
+                                status=status.HTTP_201_CREATED)
+
+        raise ValidationError({'error': 'Something Bad Happend'})
 
 
 class Activate(APIView):
