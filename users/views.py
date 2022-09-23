@@ -57,7 +57,8 @@ class tenantuserSignup(APIView):
             if check_user or check_user is not None:
                 try:
                     check_user_teanant = check_user.tenant_user
-                    return Response({'info': 'Already a User', 'user_id': check_user.id, 'name': check_user.name},
+
+                    return Response({'info': 'Already a User', 'user_id': check_user.id, 'name': check_user.name, 'tenant': check_user_teanant.schema_name},
                                     status=status.HTTP_201_CREATED)
                 except:
                     check_user.delete()
