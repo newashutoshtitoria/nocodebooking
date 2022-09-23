@@ -16,7 +16,7 @@ class businessPlan(models.Model):
 
 
 class Tenant(TenantMixin):
-    user = models.ForeignKey(AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='tenant_user')
+    user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='tenant_user')
     company_name = models.CharField(max_length=50, null=True, blank=True)
     is_active = models.BooleanField(default=False, blank=True)
     # trial_expired = models.BooleanField(default=False)

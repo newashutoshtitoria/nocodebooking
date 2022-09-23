@@ -39,6 +39,38 @@ class Signup(APIView):
         raise ValidationError({'error': 'Invalid User'})
 
 
+class tenantuserSignup(APIView):
+    """
+    View for Tenant sign up.
+    """
+    serializer_class = TenantUserSignupSerializer
+    permission_classes = (permissions.AllowAny,)
+    def post(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        with schema_context('public'):
+            try:
+                check_user_tenant = User.objects.get(phone_number=request.data['phone_number']).tenant_user.first()
+            except:
+                check_user_tenant = None
+            if not check_user_tenant or check_user_tenant is None:
+                user_with_no_tenant = User.objects.get(phone_number=request.data['phone_number'])
+                user_with_no_tenant.delete()
+
+
+            serializer = TenantUserSignupSerializer(data=request.data)
+            if serializer.is_valid(raise_exception=True):
+                phone_number = serializer.validated_data['phone_number']
+                name = serializer.validated_data['name']
+                password = serializer.validated_data['password']
+
+                user = User.objects.create_public_user(phone_number=phone_number, name=name, password=password)
+                msg_thread = Thread(target=sendotp,args=(user,schema_name))
+                msg_thread.start()
+                user.save()
+                return Response({'info': 'Successfully signed-up', 'user_id': user.id, 'name': name}, status=status.HTTP_201_CREATED)
+        raise ValidationError({'error': 'Invalid User'})
+
+
 class Activate(APIView):
     """
     Activate verifies the stored otp and the otp entered by user.
@@ -211,6 +243,13 @@ class newphone_validate(APIView):
 
                 if request_phonenumber or request_phonenumber is not None:
                     new_phone_number = request_phonenumber.phone_number
+                    with schema_context('public'):
+                        try:
+                            public_user_obj = User.objects.get(phone_number=receiver.phone_number)
+                        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+                            public_user_obj = None
+                        if public_user_obj or public_user_obj is not None:
+                            public_user_obj.phone_number = new_phone_number
                     receiver.phone_number = new_phone_number
                     receiver.active = True
                     receiver.phone_validated = True
@@ -225,4 +264,74 @@ class newphone_validate(APIView):
 
 
 
+class AdminLoginView(APIView):
+    """
+    Login for admin.
+    """
 
+    serializer_class = AdminLoginSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request):
+        schema_name = connection.schema_name
+        with schema_context(schema_name):
+            serializer = AdminLoginSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            phone_number = serializer.validated_data['phone_number']
+            password = serializer.validated_data['password']
+            user = User.objects.get(phone_number=phone_number)
+            if user.check_password(password):
+                refresh, access = get_tokens_for_user(user)
+                return Response({'message': 'Successful', 'refresh': refresh, 'access': access},
+                                status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminForgetPasswordView(APIView):
+    serializer_class = AdminForgetPasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        with schema_context(schema_name):
+            serializer = AdminForgetPasswordSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            phone_number = serializer.validated_data['phone_number']
+            user = User.objects.get(phone_number=phone_number, admin=True)
+            msg_thread = Thread(target=sendotp, args=(user,))
+            msg_thread.start()
+            return Response({'info': 'successful! Otp sent', 'user_id': user.id, 'name': user.name},
+                            status=status.HTTP_201_CREATED)
+
+
+class AdminResetPasswordView(APIView):
+    serializer_class = AdminResetPasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, user_id, *args, **kwargs):
+        schema_name = connection.schema_name
+        with schema_context(schema_name):
+            serializer = AdminResetPasswordSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            otp = serializer.validated_data['otp']
+            new_password = serializer.validated_data['new_password']
+            try:
+                admin_user_obj = User.objects.get(id=user_id, admin=True)
+            except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+                admin_user_obj = None
+            try:
+                admin_user_otp = OTP.objects.get(receiver=user_id)
+            except(TypeError, ValueError, OverflowError, OTP.DoesNotExist):
+                admin_user_otp = None
+
+            if admin_user_obj is None or admin_user_otp is None:
+                raise ValidationError({'error': 'you are not a valid user'})
+            else:
+                if str(admin_user_otp.otp) == str(otp):
+                    admin_user_obj.set_password(new_password)
+                    admin_user_obj.save()
+                    admin_user_otp.delete()
+                    return Response({'message': 'Successful', })
+                else:
+                    raise ValidationError({'error': 'Invalid OTP'})

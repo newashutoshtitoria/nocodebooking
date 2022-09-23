@@ -3,6 +3,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from .manager import PhoneNumberUserManager
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
+
 from datetime import datetime
 
 
@@ -10,7 +11,6 @@ class User(AbstractBaseUser):
     phone_number = models.CharField(unique=True, max_length=13)
     # email_id = models.EmailField(max_length=254)
     name = models.CharField(max_length=255, blank=False, null=False)
-    phone_validated = models.BooleanField(default=False)
 
     objects = PhoneNumberUserManager()
     active = models.BooleanField(default=False)
@@ -20,6 +20,9 @@ class User(AbstractBaseUser):
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['name']
+
+    class Meta:
+        indexes = [models.Index(fields=['phone_number'])]
 
     def get_full_name(self):
         # The user is identified by their email address
@@ -65,6 +68,9 @@ class OTP(models.Model):
     otp = models.IntegerField(null=False, blank=False)
     sent_on = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [models.Index(fields=['receiver'])]
+
     def __str__(self):
         return "%s has received otps: %s" % (self.receiver.phone_number, self.otp)
 
@@ -74,9 +80,11 @@ class requestednewphonenumber(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(unique=True, max_length=13)
-    validated = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [models.Index(fields=['user', 'phone_number'])]
+    #
     # def __str__(self):
     #     return "%s has received otps: %s" % (self.receiver.phone_number, self.otp)
 

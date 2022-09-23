@@ -26,3 +26,12 @@ class PhoneNumberUserManager(BaseUserManager):
         user.admin = True
         user.save(using=self._db)
         return user
+
+    def create_public_user(self, phone_number, name, password):
+        user = self.create_user(
+            phone_number,
+            name,
+        )
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
