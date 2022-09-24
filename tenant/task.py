@@ -17,10 +17,16 @@ def createcompany(data):
     schema_name = data['schema_name']
     user = User.objects.get(id=data['user'])
     company_name = data['company_name']
+    password = data['password']
 
+    try:
+        check_tenant = user.tenant_user
+    except:
+        check_tenant = None
 
-    if not user.tenant_user.last():
+    if check_tenant is None:
         tenant = Tenant.objects.create(schema_name=schema_name, user=user, company_name=company_name)
+        tenant.is_active = True
         tenant.save()
         domain = Domain()
         domain.domain = str(schema_name) + '.localhost'
@@ -28,7 +34,8 @@ def createcompany(data):
         domain.is_primary = True
         domain.save()
 
+
         with schema_context(schema_name):
-            User.objects.create_superuser(phone_number=user.phone_number, name=user.name, password=user.password)
+            User.objects.create_superuser(phone_number=user.phone_number, name=user.name, password=password)
 
         return True

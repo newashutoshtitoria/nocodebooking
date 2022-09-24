@@ -7,6 +7,9 @@ import re
 User = get_user_model()
 
 class TenantSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        style={'input_type': 'password'}
+    )
 
     class Meta:
         model = Tenant

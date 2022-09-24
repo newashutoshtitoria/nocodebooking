@@ -11,7 +11,6 @@ class User(AbstractBaseUser):
     phone_number = models.CharField(unique=True, max_length=13)
     # email_id = models.EmailField(max_length=254)
     name = models.CharField(max_length=255, blank=False, null=False)
-
     objects = PhoneNumberUserManager()
     active = models.BooleanField(default=False)
     staff = models.BooleanField(default=False)

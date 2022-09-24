@@ -14,20 +14,20 @@ class createCompany(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-
         serializer = TenantSerializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
             schema_name = serializer.validated_data['schema_name']
             user= request.user
             company_name = serializer.validated_data['company_name']
+            password = serializer.validated_data['password']
 
             data = {
                 'schema_name': schema_name,
                 'user': user.id,
                 'company_name': company_name,
+                'password':password
             }
-
             if createcompany.delay(data):
                 return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
         raise ValidationError({'error': 'something bad happens'})
