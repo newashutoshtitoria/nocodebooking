@@ -205,3 +205,26 @@ class AdminResetPasswordSerializer(serializers.ModelSerializer):
                 raise ValidationError({"error":"Passwords don't match"})
             else:
                 return data
+
+
+class publicForgetPasswordSerializer(serializers.ModelSerializer):
+    phone_number = serializers.CharField(validators=None)
+
+    class Meta:
+        model = User
+        fields = ['phone_number', ]
+
+    def validate(self,data):
+        phone_number = data.get('phone_number')
+        if phone_number:
+            phone_regex = "^[6789]\d{9}$"
+            phone_valid = re.compile(phone_regex)
+        if not phone_valid.match(phone_number):
+            raise ValidationError({"error": "Invalid Phone number"})
+        try:
+            user = User.objects.get(phone_number=phone_number)
+        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
+        if not user or user is None:
+            raise ValidationError({'error': "Not an User"})
+        return data

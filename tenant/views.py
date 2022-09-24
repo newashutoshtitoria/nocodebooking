@@ -8,26 +8,30 @@ from rest_framework import status
 from django_tenants.utils import schema_context
 from users.models import User
 from .task import createcompany
+from django.db import connection
+from django_tenants.utils import schema_context
 
 class createCompany(APIView):
     serializer_class = TenantSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
-        serializer = TenantSerializer(data=request.data)
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            serializer = TenantSerializer(data=request.data)
 
-        if serializer.is_valid(raise_exception=True):
-            schema_name = serializer.validated_data['schema_name']
-            user= request.user
-            company_name = serializer.validated_data['company_name']
-            password = serializer.validated_data['password']
+            if serializer.is_valid(raise_exception=True):
+                schema_name = serializer.validated_data['schema_name']
+                user = request.user
+                company_name = serializer.validated_data['company_name']
+                password = serializer.validated_data['password']
 
-            data = {
-                'schema_name': schema_name,
-                'user': user.id,
-                'company_name': company_name,
-                'password':password
-            }
-            if createcompany.delay(data):
-                return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
-        raise ValidationError({'error': 'something bad happens'})
+                data = {
+                    'schema_name': schema_name,
+                    'user': user.id,
+                    'company_name': company_name,
+                    'password': password
+                }
+                if createcompany.delay(data):
+                    return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
+        raise ValidationError({'error': 'something bad happens, you can create a site'})

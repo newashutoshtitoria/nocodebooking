@@ -280,19 +280,40 @@ class AdminLoginView(APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        schema_name = connection.schema_name
-        with schema_context(schema_name):
-            serializer = AdminLoginSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            phone_number = serializer.validated_data['phone_number']
-            password = serializer.validated_data['password']
-            user = User.objects.get(phone_number=phone_number)
-            if user.check_password(password):
-                refresh, access = get_tokens_for_user(user)
-                return Response({'message': 'Successful', 'refresh': refresh, 'access': access},
-                                status=status.HTTP_200_OK)
-            else:
-                return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        with schema_context('public'):
+            try:
+                check_user = User.objects.get(phone_number=request.data['phone_number'])
+            except:
+                check_user = None
+            if check_user or check_user is not None:
+                try:
+                    check_user_teanant = check_user.tenant_user
+                    if check_user_teanant.is_active:
+                        with schema_context(check_user_teanant.schema_name):
+                            serializer = AdminLoginSerializer(data=request.data)
+                            serializer.is_valid(raise_exception=True)
+                            phone_number = serializer.validated_data['phone_number']
+                            password = serializer.validated_data['password']
+                            user = User.objects.get(phone_number=phone_number)
+                            if user.check_password(password):
+                                refresh, access = get_tokens_for_user(user)
+                                return Response({'message': 'Successful', 'tenant':check_user_teanant.schema_name,'refresh': refresh, 'access': access},
+                                                status=status.HTTP_200_OK)
+                            else:
+                                return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        return Response({'message': 'Account is not active or Suspended', 'tenant': check_user_teanant.schema_name},
+                                        status=status.HTTP_426_UPGRADE_REQUIRED)
+                except:
+                    check_user.delete()
+                    return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'error': 'Something Bad Happened'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
 
 
 class AdminForgetPasswordView(APIView):
@@ -306,7 +327,7 @@ class AdminForgetPasswordView(APIView):
             serializer.is_valid(raise_exception=True)
             phone_number = serializer.validated_data['phone_number']
             user = User.objects.get(phone_number=phone_number, admin=True)
-            msg_thread = Thread(target=sendotp, args=(user,))
+            msg_thread = Thread(target=sendotp, args=(user,schema_name))
             msg_thread.start()
             return Response({'info': 'successful! Otp sent', 'user_id': user.id, 'name': user.name},
                             status=status.HTTP_201_CREATED)
@@ -327,10 +348,12 @@ class AdminResetPasswordView(APIView):
                 admin_user_obj = User.objects.get(id=user_id, admin=True)
             except(TypeError, ValueError, OverflowError, User.DoesNotExist):
                 admin_user_obj = None
+
             try:
                 admin_user_otp = OTP.objects.get(receiver=user_id)
             except(TypeError, ValueError, OverflowError, OTP.DoesNotExist):
                 admin_user_otp = None
+
 
             if admin_user_obj is None or admin_user_otp is None:
                 raise ValidationError({'error': 'you are not a valid user'})
@@ -338,7 +361,59 @@ class AdminResetPasswordView(APIView):
                 if str(admin_user_otp.otp) == str(otp):
                     admin_user_obj.set_password(new_password)
                     admin_user_obj.save()
+
+                    with schema_context('public'):
+                        user_phone_number = admin_user_obj.phone_number
+                        try:
+                            user = User.objects.get(phone_number=user_phone_number)
+                        except:
+                            user = None
+                        if user or user is not None:
+                            user.set_password(new_password)
+                            user.save()
+                        else:
+                            return Response({'error': 'User Somehow Deleted From Public Tenant'})
+
                     admin_user_otp.delete()
                     return Response({'message': 'Successful', })
                 else:
                     raise ValidationError({'error': 'Invalid OTP'})
+
+class publicForgetPasswordView(APIView):
+    serializer_class = publicForgetPasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            with schema_context('public'):
+                serializer = publicForgetPasswordSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                phone_number = serializer.validated_data['phone_number']
+                user = User.objects.get(phone_number=phone_number, admin=False)
+
+                try:
+                    check_user_teanant = user.tenant_user
+                    if check_user_teanant.is_active:
+                        msg_thread = Thread(target=sendotp, args=(user, schema_name))
+                        msg_thread.start()
+
+                        return Response({'info': 'successful! Otp sent', 'user_id': user.id, 'name': user.name},
+                                        status=status.HTTP_201_CREATED)
+                    else:
+                        return Response({'message':'Account has suspended or not active'}, status=status.HTTP_400_BAD_REQUEST)
+                except:
+                    user.delete()
+                    return Response({'message':'Account not Exist'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+        else:
+            return Response({'message': 'Not in Public Tenant'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
