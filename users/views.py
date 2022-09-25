@@ -193,7 +193,11 @@ class userdetail(APIView):
             raise ValidationError({'error': 'Not a valid user'})
 
 
+
 class changephonenumber(APIView):
+    """
+    change phone number in tenant, if request user is an admin of tenant then mobile number will also change in public schema.
+    """
     serializer_class = phonenumberchangeserializer
     permission_classes = (permissions.IsAuthenticated, IsadminOrIsOwner )
 
@@ -218,12 +222,12 @@ class changephonenumber(APIView):
 
 class newphone_validate(APIView):
     """
-    Activate verifies the stored otp and the otp entered by user.
+    Activate verifies the stored otp and the otp entered by user.phone number can be only change in tenant not in public, but change in both public and tenant if user is admin
     """
     permission_classes = (permissions.IsAuthenticated, IsadminOrIsOwner )
     serializer_class = OTPSerializer
 
-    def post(self, request, user_id,*args,**kwargs):
+    def post(self, request,user_id, *args,**kwargs):
         schema_name = connection.schema_name
         with schema_context(schema_name):
             serializer = OTPSerializer(data=request.data)
@@ -236,6 +240,13 @@ class newphone_validate(APIView):
                 receiver = User.objects.get(id=user_id)
             except(TypeError, ValueError, OverflowError, User.DoesNotExist):
                 receiver = None
+
+            try:
+                receiver_admin = User.objects.get(id=user_id, admin=True)
+            except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+                receiver_admin = False
+
+
             if otp is None or receiver is None:
                 raise ValidationError({'error': 'you are not a valid user'})
             elif timezone.now() - otp.sent_on >= timedelta(days=0, hours=0, minutes=1, seconds=0):
@@ -248,20 +259,25 @@ class newphone_validate(APIView):
                 except(TypeError, ValueError, OverflowError, requestednewphonenumber.DoesNotExist):
                     request_phonenumber = None
 
-                if request_phonenumber or request_phonenumber is not None:
+                if  request_phonenumber or request_phonenumber is not None:
                     new_phone_number = request_phonenumber.phone_number
-                    with schema_context('public'):
-                        try:
-                            public_user_obj = User.objects.get(phone_number=receiver.phone_number)
-                        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-                            public_user_obj = None
-                        if public_user_obj or public_user_obj is not None:
-                            public_user_obj.phone_number = new_phone_number
+                    if receiver_admin:
+                        with schema_context('public'):
+                            try:
+                                public_user_obj = User.objects.get(phone_number=receiver.phone_number)
+                            except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+                                public_user_obj = None
+
+                            if public_user_obj or public_user_obj is not None:
+                                public_user_obj.phone_number = new_phone_number
+                                public_user_obj.save()
+
                     receiver.phone_number = new_phone_number
                     receiver.active = True
                     receiver.phone_validated = True
                     receiver.save()
                     request_phonenumber.delete()
+
 
                 otp.delete()
                 refresh, access = get_tokens_for_user(receiver)
@@ -397,7 +413,6 @@ class publicForgetPasswordView(APIView):
                     if check_user_teanant.is_active:
                         msg_thread = Thread(target=sendotp, args=(user, schema_name))
                         msg_thread.start()
-
                         return Response({'info': 'successful! Otp sent', 'user_id': user.id, 'name': user.name},
                                         status=status.HTTP_201_CREATED)
                     else:
@@ -413,6 +428,56 @@ class publicForgetPasswordView(APIView):
             return Response({'message': 'Not in Public Tenant'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+
+
+
+class publicResetPasswordView(APIView):
+    serializer_class = AdminResetPasswordSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def post(self, request, user_id, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            with schema_context('public'):
+                serializer = AdminResetPasswordSerializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                otp = serializer.validated_data['otp']
+                new_password = serializer.validated_data['new_password']
+
+                try:
+                    public_user_obj = User.objects.get(id=user_id, admin=False)
+                except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+                    public_user_obj = None
+
+                try:
+                    public_user_otp = OTP.objects.get(receiver=user_id)
+                except(TypeError, ValueError, OverflowError, OTP.DoesNotExist):
+                    public_user_otp = None
+
+                if public_user_obj is None or public_user_otp is None:
+                    raise ValidationError({'error': 'you are not a valid user'})
+                else:
+                    if str(public_user_otp.otp) == str(otp):
+                        public_user_obj.set_password(new_password)
+                        public_user_obj.save()
+
+                        with schema_context(public_user_obj.tenant_user.schema_name):
+                            try:
+                                user = User.objects.get(phone_number=public_user_obj.phone_number, admin=True)
+                            except:
+                                user = None
+
+                            if user or user is not None:
+                                user.set_password(new_password)
+                                user.save()
+                            else:
+                                return Response({'error': 'Not a Valid User'}, status=status.HTTP_400_BAD_REQUEST)
+
+                        public_user_otp.delete()
+                        return Response({'message': 'Sucessfull'}, status=status.HTTP_200_OK)
+                    else:
+                        raise ValidationError({'error':'Invalid OTP'})
 
 
 

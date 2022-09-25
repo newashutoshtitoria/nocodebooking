@@ -20,6 +20,7 @@ urlpatterns = [
     re_path(r'^tenantusersignup/$', views.tenantuserSignup.as_view(), name='tenantusersignup'),
 
     #public user password
-    re_path(r'^public_forget_password/$', views.publicForgetPasswordView.as_view(), name='admin_forget_password'),
+    re_path(r'^public_forget_password/$', views.publicForgetPasswordView.as_view(), name='public_forget_password'),
+    re_path(r'^public_reset_password/(?P<user_id>[0-9]+)/$', views.publicResetPasswordView.as_view(), name='public_reset_password'),
 
 ]

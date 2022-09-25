@@ -129,6 +129,7 @@ class phonenumberchangeserializer(serializers.ModelSerializer):
             user = User.objects.get(phone_number=phone_number)
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
+
         if user or user is not None:
             raise ValidationError({'error': "Phone number exist"})
 
