@@ -1,5 +1,7 @@
 from pathlib import Path
 from datetime import timedelta
+import os
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-u=)nti=7vv^gf+ma6%3=3wr(o3_ja@4i&slm35y3w(w_06bad5'
@@ -150,11 +152,12 @@ DATABASES = {
         'NAME': 'postgres',
         # set your user details
         'USER': 'dbmasteruser',
-        'PASSWORD': 'J7Jqkq&i[+t~J7cqR&z,{dakEzzDeT7E',
-        'HOST': 'ls-8028e32f605074c7a82584df64cb009e90ef60f9.c53n0vmbvp41.ap-south-1.rds.amazonaws.com',
+        'PASSWORD': 'kS0i1l|%1Y?|CohVKJ&>N#[tI1v5;B,V',
+        'HOST': 'ls-f78f09643f20ce36b71a627d0b91c7fb95583d7e.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
         'POST': '5432'
     }
 }
+
 
 
 # DATABASE ROUTER
@@ -195,7 +198,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
-import os
+
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
