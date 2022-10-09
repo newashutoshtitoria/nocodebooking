@@ -28,6 +28,7 @@ SHARED_APPS = [
     'django.contrib.staticfiles',
 
 
+
 ]
 """
     These app's data are stored on their specific schemas
@@ -41,9 +42,6 @@ TENANT_APPS = [
     'django.contrib.admin',
     'django.contrib.sessions',
     'django.contrib.messages',
-
-
-
 
     # tenant-specific apps
     'main',
@@ -152,8 +150,8 @@ DATABASES = {
         'NAME': 'postgres',
         # set your user details
         'USER': 'dbmasteruser',
-        'PASSWORD': 'kS0i1l|%1Y?|CohVKJ&>N#[tI1v5;B,V',
-        'HOST': 'ls-f78f09643f20ce36b71a627d0b91c7fb95583d7e.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
+        'PASSWORD': '|OUJJQ(%+!gd;^cd5H+.]y<%}]1<yqe+',
+        'HOST': 'ls-8a1c3ac9dd23af8e4d79e2d5f93061faff6033b6.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
         'POST': '5432'
     }
 }
