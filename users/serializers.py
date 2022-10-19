@@ -3,9 +3,10 @@ from django.contrib.auth import get_user_model
 from rest_framework.exceptions import ValidationError
 from .models import *
 import re
+from tenant.models import Domain
+
 
 User = get_user_model()
-
 
 class UserSignupSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(required=True, allow_blank=False, allow_null=False,)
@@ -228,4 +229,14 @@ class publicForgetPasswordSerializer(serializers.ModelSerializer):
             user = None
         if not user or user is None:
             raise ValidationError({'error': "Not an User"})
+        return data
+
+
+class DomainSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Domain
+        fields=['domain',]
+
+    def validate(self, data):
         return data

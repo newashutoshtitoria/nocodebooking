@@ -16,6 +16,8 @@ from django_tenants.utils import remove_www
 from django.db import connection
 from django_tenants.utils import schema_context
 from django.contrib.auth import login, logout
+from tenant.models import Domain
+from core.settings import domain_choices
 
 
 class Signup(APIView):
@@ -111,7 +113,7 @@ class Activate(APIView):
                     receiver.phone_validated = True
                     receiver.save()
                 otp.delete()
-                refresh, access = get_tokens_for_user(receiver)
+                refresh, access = get_tokens_for_user(receiver, schema_name)
                 return Response({'message': 'Successful', 'refresh': refresh, 'access': access})
             else:
                 raise ValidationError({'error': 'Invalid OTP'})
@@ -199,7 +201,7 @@ class changephonenumber(APIView):
     change phone number in tenant, if request user is an admin of tenant then mobile number will also change in public schema.
     """
     serializer_class = phonenumberchangeserializer
-    permission_classes = (permissions.IsAuthenticated, IsadminOrIsOwner )
+    permission_classes = (istenantuser, )
 
     def post(self, request, *args, **kwargs):
         schema_name = connection.schema_name
@@ -481,4 +483,31 @@ class publicResetPasswordView(APIView):
 
 
 
+class domainChange(APIView):
+    """
+    To change domain name by the tenant admin
+    """
+    serializer_class = DomainSerializer
+    permission_classes = (permissions.IsAuthenticated,)
 
+    def post(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        with schema_context('public'):
+            serializer = DomainSerializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            new_domain = serializer.validated_data['domain']+'.'+domain_choices
+
+            try:
+                check_domain = Domain.objects.get(domain=new_domain)
+            except(TypeError, ValueError, OverflowError, Domain.DoesNotExist):
+                check_domain = None
+
+            if check_domain or check_domain is not None:
+                return Response({'error': 'Domain Already Exist'}, status=status.HTTP_200_OK)
+
+
+            if request.user.admin or check_domain is not None:
+                domain = Domain.objects.get(tenant__user__phone_number=request.user.phone_number)
+                domain.domain = new_domain
+                domain.save()
+                return Response({'Success': 'Domain Created', 'domain': serializer.validated_data['domain']},status=status.HTTP_201_CREATED)

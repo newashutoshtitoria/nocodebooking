@@ -11,7 +11,6 @@ urlpatterns = [
     path('company/', include('tenant.urls')),
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
-    # path('', include('blog.urls', namespace='blog')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

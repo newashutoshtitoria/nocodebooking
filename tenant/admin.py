@@ -15,5 +15,6 @@ class TenantAdmin(TenantAdminMixin, admin.ModelAdmin):
         "user",
         "is_active",
         "created_on",
+
         )
         inlines = [DomainInline]

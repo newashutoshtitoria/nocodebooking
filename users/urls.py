@@ -23,4 +23,7 @@ urlpatterns = [
     re_path(r'^public_forget_password/$', views.publicForgetPasswordView.as_view(), name='public_forget_password'),
     re_path(r'^public_reset_password/(?P<user_id>[0-9]+)/$', views.publicResetPasswordView.as_view(), name='public_reset_password'),
 
+    #chnage domain name of an tenant
+    re_path(r'^domainchange/$', views.domainChange.as_view(), name='domainchange'),
+
 ]

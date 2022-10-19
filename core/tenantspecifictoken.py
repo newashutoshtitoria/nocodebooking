@@ -1,6 +1,5 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-import datetime
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 

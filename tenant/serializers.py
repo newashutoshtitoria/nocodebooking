@@ -19,11 +19,3 @@ class TenantSerializer(serializers.ModelSerializer):
         return data
 
 
-class DomainSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Domain
-        fields='__all__'
-
-    def validate(self, data):
-        return data

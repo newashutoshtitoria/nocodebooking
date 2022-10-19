@@ -1,6 +1,9 @@
 from pathlib import Path
 from datetime import timedelta
 import os
+from core.domains import domain
+
+domain_choices = domain
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -44,6 +47,7 @@ TENANT_APPS = [
     'django.contrib.messages',
 
     # tenant-specific apps
+    'subscriptiontenant',
     'main',
 ]
 
@@ -107,7 +111,7 @@ TENANT_DOMAIN_MODEL = "tenant.Domain"
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend',],

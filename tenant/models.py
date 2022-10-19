@@ -31,3 +31,4 @@ class Tenant(TenantMixin):
 
 class Domain(DomainMixin):
     pass
+
