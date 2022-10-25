@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django_tenants.admin import TenantAdminMixin
 
-from .models import Domain, Tenant
+from .models import *
 
 
 class DomainInline(admin.TabularInline):
@@ -18,3 +18,6 @@ class TenantAdmin(TenantAdminMixin, admin.ModelAdmin):
 
         )
         inlines = [DomainInline]
+
+admin.site.register(TenantSubscription)
+admin.site.register(SubscriptionTransaction)

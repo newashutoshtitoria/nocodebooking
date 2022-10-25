@@ -1,7 +1,7 @@
 from rest_framework import permissions
 from rest_framework.views import APIView
-from .serializers import TenantSerializer
-from .models import Tenant, Domain
+from .serializers import TenantSerializer, TenantSubscriptionSerializer
+from .models import *
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework import status
@@ -37,3 +37,28 @@ class createCompany(APIView):
         raise ValidationError({'error': 'something bad happens, you can create a site'})
 
 
+class tenatsubscription(APIView):
+    serializer_class = TenantSubscriptionSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            serializer = TenantSubscriptionSerializer(data=request.data)
+
+            if serializer.is_valid(raise_exception=True):
+                date_billing_start = serializer.validated_data['date_billing_start']
+                date_billing_end = serializer.validated_data['date_billing_end']
+                date_billing_last = serializer.validated_data['date_billing_last']
+                date_billing_next = serializer.validated_data['date_billing_next']
+                date_billing_start = serializer.validated_data['date_billing_start']
+                date_billing_start = serializer.validated_data['date_billing_start']
+                user = request.user
+                #get schema name
+                try:
+                    check_user_teanant = user.tenant_user
+                    print(check_user_teanant, ">>>>>>>>>>>>>>>>")
+                except:
+                    pass
+
+                return Response({'ashu': 'asu'})

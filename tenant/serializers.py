@@ -19,3 +19,14 @@ class TenantSerializer(serializers.ModelSerializer):
         return data
 
 
+class TenantSubscriptionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TenantSubscription
+        # fields = '__all__'
+        exclude = ['user', 'teant_attched']
+
+    def validate(self, data):
+        return data
+
+
