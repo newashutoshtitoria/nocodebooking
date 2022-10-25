@@ -163,6 +163,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 #Production Db
+
 DATABASES = {
     'default': {
         # Tenant Engine

@@ -7,7 +7,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework import status
 from django_tenants.utils import schema_context
 from users.models import User
-from .task import createcompany
+from .task import createcompany, createcompanynocelery
 from django.db import connection
 from django_tenants.utils import schema_context
 
@@ -32,8 +32,14 @@ class createCompany(APIView):
                     'company_name': company_name,
                     'password': password
                 }
-                if createcompany.delay(data):
+
+                #without celery
+                if createcompanynocelery(data):
                     return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
+
+                #with celery
+                # if createcompany.delay(data):
+                #     return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
         raise ValidationError({'error': 'something bad happens, you can create a site'})
 
 
