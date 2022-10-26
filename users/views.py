@@ -114,7 +114,7 @@ class Activate(APIView):
                     receiver.save()
                 otp.delete()
                 refresh, access = get_tokens_for_user(receiver, schema_name)
-                return Response({'message': 'Successful', 'refresh': refresh, 'access': access})
+                return Response({'message': 'Successful', 'access': access, 'refresh': refresh})
             else:
                 raise ValidationError({'error': 'Invalid OTP'})
 
@@ -178,7 +178,7 @@ class userdetail(APIView):
     Profile View of User.
     """
     serializer_class = UserSignupSerializer
-    permission_classes = (permissions.AllowAny,permissions.IsAuthenticated)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
         schema_name = connection.schema_name

@@ -9,7 +9,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
         schema_name = connection.schema_name
-
         token['schema_name'] = schema_name
 
         return token
