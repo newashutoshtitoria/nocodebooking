@@ -34,12 +34,12 @@ class createCompany(APIView):
                 }
 
                 #without celery
-                # if createcompanynocelery(data):
-                #     return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
+                if createcompanynocelery(data):
+                    return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
 
                 #with celery
-                if createcompany.delay(data):
-                    return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
+                # if createcompany.delay(data):
+                #     return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
         raise ValidationError({'error': 'something bad happens, you can create a site'})
 
 
