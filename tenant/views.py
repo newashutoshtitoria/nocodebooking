@@ -33,29 +33,13 @@ class createCompany(APIView):
                     'password': password
                 }
 
-                try:
-                    check_tenant = user.tenant_user
-                except:
-                    check_tenant = None
-
-                if check_tenant is None:
-                    tenant = Tenant.objects.create(schema_name=schema_name, user=user, company_name=company_name)
-                    tenant.is_active = True
-                    tenant.save()
-                    domain = Domain()
-                    domain.domain = str(schema_name) + '.localhost'
-                    domain.tenant = tenant
-                    domain.is_primary = True
-                    domain.save()
-                    return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
-
                 #without celery
                 # if createcompanynocelery(data):
                 #     return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
 
                 #with celery
-                # if createcompany.delay(data):
-                #     return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
+                if createcompany.delay(data):
+                    return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
         raise ValidationError({'error': 'something bad happens, you can create a site'})
 
 

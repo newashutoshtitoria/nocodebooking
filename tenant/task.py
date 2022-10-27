@@ -29,7 +29,7 @@ def createcompany(data):
         tenant.is_active = True
         tenant.save()
         domain = Domain()
-        domain.domain = str(schema_name) + '.localhost'
+        domain.domain = str(schema_name) + '.bookeve.in'
         domain.tenant = tenant
         domain.is_primary = True
         domain.save()
