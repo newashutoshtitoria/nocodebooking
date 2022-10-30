@@ -20,13 +20,22 @@ class TenantSerializer(serializers.ModelSerializer):
 
 
 class TenantSubscriptionSerializer(serializers.ModelSerializer):
+    amountpaid = serializers.CharField(
+        style={'input_type': 'password'}
+    )
 
     class Meta:
         model = TenantSubscription
         # fields = '__all__'
-        exclude = ['user', 'teant_attched']
+        exclude = ['user', 'teant_attched', 'date_billing_end']
 
     def validate(self, data):
         return data
 
+
+class TenantTemplateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TenantTemplate
+        fields = '__all__'
 

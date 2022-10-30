@@ -1,6 +1,6 @@
 from rest_framework import permissions
 from rest_framework.views import APIView
-from .serializers import TenantSerializer, TenantSubscriptionSerializer
+from .serializers import TenantSerializer, TenantSubscriptionSerializer, TenantTemplateSerializer
 from .models import *
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -10,6 +10,12 @@ from users.models import User
 from .task import createcompany, createcompanynocelery
 from django.db import connection
 from django_tenants.utils import schema_context
+from django.utils import timezone
+from subscriptionplansg.models import *
+from django.utils.decorators import method_decorator
+from django.db.transaction import atomic
+from rest_framework import generics, viewsets, mixins
+
 
 class createCompany(APIView):
     serializer_class = TenantSerializer
@@ -43,6 +49,8 @@ class createCompany(APIView):
         raise ValidationError({'error': 'something bad happens, you can create a site'})
 
 
+
+@method_decorator(atomic, name='dispatch')
 class tenatsubscription(APIView):
     serializer_class = TenantSubscriptionSerializer
     permission_classes = (permissions.IsAuthenticated,)
@@ -53,18 +61,116 @@ class tenatsubscription(APIView):
             serializer = TenantSubscriptionSerializer(data=request.data)
 
             if serializer.is_valid(raise_exception=True):
-                date_billing_start = serializer.validated_data['date_billing_start']
-                date_billing_end = serializer.validated_data['date_billing_end']
-                date_billing_last = serializer.validated_data['date_billing_last']
-                date_billing_next = serializer.validated_data['date_billing_next']
-                date_billing_start = serializer.validated_data['date_billing_start']
-                date_billing_start = serializer.validated_data['date_billing_start']
-                user = request.user
+                subscription_obj = serializer.validated_data['subscription']
+                amountpaid = serializer.validated_data['amountpaid']
+                user_s = request.user
+
                 #get schema name
                 try:
-                    check_user_teanant = user.tenant_user
-                    print(check_user_teanant, ">>>>>>>>>>>>>>>>")
+                    check_user_teanant = user_s.tenant_user
                 except:
-                    pass
+                    check_user_teanant = None
 
-                return Response({'ashu': 'asu'})
+                if check_user_teanant or check_user_teanant is not None:
+                    # check subscription plan
+                    try:
+                        tenant_sub_plan = check_user_teanant.teant_subscriptions
+                    except:
+                        tenant_sub_plan = None
+
+                    # check subscription plan is active
+                    if tenant_sub_plan:
+                        if tenant_sub_plan.date_billing_end - timezone.now() >= timedelta(days=0, hours=0, minutes=0, seconds=0):
+                            return Response({'message': 'You Already have plan'})
+                        else:
+                            #as plan expired, we are delting tenant subscription data
+                            check_user_teanant.teant_subscriptions.all().delete()
+                            new_subscription = TenantSubscription.objects.create(user=user_s,teant_attched= check_user_teanant, subscription = subscription_obj)
+                            new_subscription.payment = True
+                            new_subscription.save()
+
+                            #creating transaction for history
+
+                            SubscriptionTransaction.objects.create(
+                                user = user_s,
+                                teant_attched = check_user_teanant,
+                                subscription = subscription_obj,
+                                amount = subscription_obj.cost,
+                                amount_paid = amountpaid,
+
+                            )
+                            return Response({'message': 'Successfully'}, status= status.HTTP_201_CREATED)
+
+
+class TenantTemplateView(viewsets.ModelViewSet):
+    """
+    Tenant owner can use template for their websites
+    """
+    serializer_class = TenantTemplateSerializer
+    queryset = TenantTemplate.objects.all().order_by('id')
+    permission_classes = (permissions.IsAuthenticated,)
+
+
+    def get_queryset(self):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            user_calling = self.request.user
+            if user_calling or user_calling is not None:
+                try:
+                    check_user_teanant = user_calling.tenant_user
+                except:
+                    check_user_teanant = None
+
+                if check_user_teanant:
+                    return TenantTemplate.objects.filter(teant_attched=check_user_teanant)
+                else:
+                    return Response({'message': 'User have no tenant'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            return Response({'message': 'Not Allowed this request'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    def perform_create(self, serializer):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            user_calling = self.request.user
+            if user_calling or user_calling is not None:
+                try:
+                    check_user_teanant = user_calling.tenant_user
+                except:
+                    check_user_teanant = None
+
+                if check_user_teanant:
+                    count = TenantTemplate.objects.filter(teant_attched=check_user_teanant).count()
+                    if count >= 1:
+                        raise ValidationError({'error':"Not Allowed"})
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save(teant_attched=check_user_teanant)
+
+                else:
+                    return Response({'message': 'User have no tenant'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            return Response({'message': 'Not Allowed this request'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+    def update(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            partial = kwargs.pop('partial', True)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        else:
+            return Response({'message': 'Not Allowed this request'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+    def destroy(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            tenant_template_obj = TenantTemplate.objects.get(pk=self.kwargs['pk'])
+            tenant_template_obj.delete()
+            return Response({'message': 'deleted'})
+
+
+
+

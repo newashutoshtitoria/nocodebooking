@@ -146,7 +146,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 #local database
-#
+
 # DATABASES = {
 #     'default': {
 #         # Tenant Engine
@@ -155,8 +155,8 @@ WSGI_APPLICATION = 'core.wsgi.application'
 #         'NAME': 'postgres',
 #         # set your user details
 #         'USER': 'dbmasteruser',
-#         'PASSWORD': '|OUJJQ(%+!gd;^cd5H+.]y<%}]1<yqe+',
-#         'HOST': 'ls-8a1c3ac9dd23af8e4d79e2d5f93061faff6033b6.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
+#         'PASSWORD': 'Sednaplanet7',
+#         'HOST': 'ls-dc464f5509f31e71528e36a56bfbace9370ac40e.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
 #         'POST': '5432'
 #     }
 # }

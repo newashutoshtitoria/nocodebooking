@@ -159,7 +159,6 @@ class PlanCost(models.Model):
             )
         else:
             return None
-
         return current + delta
 
 

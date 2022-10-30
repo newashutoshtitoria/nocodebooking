@@ -1,11 +1,18 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf.urls.static import static
 from django.conf import settings
 from rest_framework_simplejwt import views as jwt_views
 from .tenantspecifictoken import MyTokenObtainPairView
+from rest_framework.routers import DefaultRouter
+from tenant.views import TenantTemplateView
+
+
+router = DefaultRouter()
+router.register(r'tenanttemplate', TenantTemplateView)
 
 urlpatterns = [
+    re_path(r'apis/', include(router.urls)),
     path('admin/', admin.site.urls),
     path('usersapp/', include('users.urls')),
     path('company/', include('tenant.urls')),
