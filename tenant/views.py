@@ -1,6 +1,6 @@
 from rest_framework import permissions
 from rest_framework.views import APIView
-from .serializers import TenantSerializer, TenantSubscriptionSerializer, TenantTemplateSerializer
+from .serializers import TenantSerializer, TenantSubscriptionSerializer, TenantTemplateSerializer, OtpWalletSerializer
 from .models import *
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
@@ -172,5 +172,73 @@ class TenantTemplateView(viewsets.ModelViewSet):
             return Response({'message': 'deleted'})
 
 
+class tenatotpView(viewsets.ModelViewSet):
+    """
+    Tenant owner can use OTP for their websites
+    """
+    serializer_class = OtpWalletSerializer
+    queryset = OtpWallet.objects.all().order_by('id')
+    permission_classes = (permissions.IsAuthenticated,)
+
+
+    def get_queryset(self):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            user_calling = self.request.user
+            if user_calling or user_calling is not None:
+                try:
+                    check_user_teanant = user_calling.tenant_user
+                except:
+                    check_user_teanant = None
+
+                if check_user_teanant:
+                    return OtpWallet.objects.filter(teant_attched=check_user_teanant)
+                else:
+                    return Response({'message': 'User have no tenant'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            return Response({'message': 'Not Allowed this request'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    def perform_create(self, serializer):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            user_calling = self.request.user
+            if user_calling or user_calling is not None:
+                try:
+                    check_user_teanant = user_calling.tenant_user
+                except:
+                    check_user_teanant = None
+
+                if check_user_teanant:
+                    count = OtpWallet.objects.filter(teant_attched=check_user_teanant).count()
+                    if count >= 1:
+                        raise ValidationError({'error':"Not Allowed"})
+                    serializer.is_valid(raise_exception=True)
+                    serializer.save(teant_attched=check_user_teanant, user=user_calling)
+
+                else:
+                    return Response({'message': 'User have no tenant'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+        else:
+            return Response({'message': 'Not Allowed this request'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+    def update(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            partial = kwargs.pop('partial', True)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        else:
+            return Response({'message': 'Not Allowed this request'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+
+    def destroy(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            tenant_template_obj = OtpWallet.objects.get(pk=self.kwargs['pk'])
+            tenant_template_obj.delete()
+            return Response({'message': 'deleted'})
 
 

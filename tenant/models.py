@@ -108,3 +108,45 @@ class SubscriptionTransaction(models.Model):
     class Meta:
         ordering = ('date_transaction', 'user',)
 
+
+class OtpWallet(models.Model):
+    """Details for a otp wallet plan billing."""
+
+    user = models.OneToOneField(
+        AUTH_USER_MODEL,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='otp_user'
+    )
+    teant_attched = models.ForeignKey(Tenant, null=True, on_delete=models.CASCADE, related_name='teant_otp')
+
+
+    date_transaction = models.DateTimeField(
+        default=datetime.now(),
+        verbose_name='transaction date',
+    )
+    total_otp_credit = models.DecimalField(
+        blank=True,
+        decimal_places=0,
+        max_digits=4,
+        null=True,
+    )
+
+    __current_credit = None
+
+
+
+    class Meta:
+        ordering = ('date_transaction', 'user',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__current_credit = self.total_otp_credit
+
+    def save(self, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            if self.__current_credit or not None:
+                self.total_otp_credit =self.__current_credit + self.total_otp_credit
+            super(OtpWallet, self).save(*args, **kwargs)
+

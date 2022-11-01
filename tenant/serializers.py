@@ -39,3 +39,10 @@ class TenantTemplateSerializer(serializers.ModelSerializer):
         model = TenantTemplate
         fields = '__all__'
 
+
+
+class OtpWalletSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OtpWallet
+        fields = '__all__'
+

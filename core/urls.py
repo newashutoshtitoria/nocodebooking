@@ -5,11 +5,13 @@ from django.conf import settings
 from rest_framework_simplejwt import views as jwt_views
 from .tenantspecifictoken import MyTokenObtainPairView
 from rest_framework.routers import DefaultRouter
-from tenant.views import TenantTemplateView
+from tenant.views import TenantTemplateView, tenatotpView
 
 
 router = DefaultRouter()
 router.register(r'tenanttemplate', TenantTemplateView)
+router.register(r'tenatotp', tenatotpView)
+
 
 urlpatterns = [
     re_path(r'apis/', include(router.urls)),
