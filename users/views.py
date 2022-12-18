@@ -71,7 +71,8 @@ class tenantuserSignup(APIView):
                 password = serializer.validated_data['password']
 
                 user = User.objects.create_public_user(phone_number=phone_number, name=name, password=password)
-                msg_thread = Thread(target=sendotp, args=(user, schema_name))
+                otp_fetching_metching = request.data['otp_fetching_metching']
+                msg_thread = Thread(target=sendotp, args=(user, schema_name,otp_fetching_metching ))
                 msg_thread.start()
                 user.save()
                 return Response({'info': 'Successfully signed-up', 'user_id': user.id, 'name': name},
@@ -293,7 +294,6 @@ class AdminLoginView(APIView):
     """
     Login for admin.
     """
-
     serializer_class = AdminLoginSerializer
     permission_classes = (permissions.AllowAny,)
 
@@ -303,6 +303,7 @@ class AdminLoginView(APIView):
                 check_user = User.objects.get(phone_number=request.data['phone_number'])
             except:
                 check_user = None
+
             if check_user or check_user is not None:
                 try:
                     check_user_teanant = check_user.tenant_user

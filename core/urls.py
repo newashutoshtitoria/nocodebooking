@@ -16,6 +16,7 @@ router.register(r'tenatotp', tenatotpView)
 urlpatterns = [
     re_path(r'apis/', include(router.urls)),
     path('admin/', admin.site.urls),
+    path('appuser/', include('users.appurl')),
     path('usersapp/', include('users.urls')),
     path('company/', include('tenant.urls')),
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),

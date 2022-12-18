@@ -42,10 +42,14 @@ class TenantUserSignupSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(
         style={'input_type': 'password'}
     )
+    confirm_password = serializers.CharField(
+        style={'input_type': 'password'}
+    )
+    otp_fetching_metching = serializers.CharField()
 
     class Meta:
         model = User
-        fields = ('phone_number', 'name', 'password', 'confirm_password')
+        fields = ('phone_number', 'name', 'password', 'confirm_password', 'otp_fetching_metching')
 
     def validate(self, data):
         phone_number = data.get('phone_number')
@@ -174,11 +178,11 @@ class AdminForgetPasswordSerializer(serializers.ModelSerializer):
         if not phone_valid.match(phone_number):
             raise ValidationError({"error": "Invalid Phone number"})
         try:
-            user = User.objects.get(phone_number=phone_number, admin=True)
+            user = User.objects.get(phone_number=phone_number)
         except(TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
         if not user or user is None:
-            raise ValidationError({'error': "Not an Admin User"})
+            raise ValidationError({'error': "Not an User"})
         return data
 
 
@@ -198,8 +202,6 @@ class AdminResetPasswordSerializer(serializers.ModelSerializer):
         otp = data.get('otp')
         new_password = data.get('new_password')
         confirm_password = data.get('confirm_password')
-        print(new_password)
-        print(confirm_password)
         if len(str(otp)) != 4:
             raise ValidationError({"error":"Invalid OTP"})
         else:

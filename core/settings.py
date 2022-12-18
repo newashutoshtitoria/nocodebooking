@@ -147,23 +147,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 #local database
 
-# DATABASES = {
-#     'default': {
-#         # Tenant Engine
-#         'ENGINE': 'django_tenants.postgresql_backend',
-#         # set database name
-#         'NAME': 'postgres',
-#         # set your user details
-#         'USER': 'dbmasteruser',
-#         'PASSWORD': 'Sednaplanet7',
-#         'HOST': 'ls-dc464f5509f31e71528e36a56bfbace9370ac40e.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
-#         'POST': '5432'
-#     }
-# }
-
-
-#Production Db
-
 DATABASES = {
     'default': {
         # Tenant Engine
@@ -172,11 +155,28 @@ DATABASES = {
         'NAME': 'postgres',
         # set your user details
         'USER': 'dbmasteruser',
-        'PASSWORD': 'BE*F[*nLl1P[yc5N;mGgw|32S[h<rj8J',
-        'HOST': 'ls-ff73780815a60734e0e9b4c84dfa044e8578fb5b.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
+        'PASSWORD': '2M0SnLXCno{O%bk2OK`cFzJ22+n$P.qS',
+        'HOST': 'ls-8fbc29ae16a4761c93feb220a387aedf5dc55467.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
         'POST': '5432'
     }
 }
+
+
+#Production Db
+
+# DATABASES = {
+#     'default': {
+#         # Tenant Engine
+#         'ENGINE': 'django_tenants.postgresql_backend',
+#         # set database name
+#         'NAME': 'postgres',
+#         # set your user details
+#         'USER': 'dbmasteruser',
+#         'PASSWORD': 'BE*F[*nLl1P[yc5N;mGgw|32S[h<rj8J',
+#         'HOST': 'ls-ff73780815a60734e0e9b4c84dfa044e8578fb5b.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
+#         'POST': '5432'
+#     }
+# }
 
 
 
