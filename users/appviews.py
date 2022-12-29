@@ -138,7 +138,6 @@ class AdminLoginView(APIView):
                 check_user = User.objects.get(phone_number=request.data['phone_number'])
             except:
                 check_user = None
-
             if check_user or check_user is not None:
                 try:
                     check_user_teanant = check_user.tenant_user
@@ -295,7 +294,6 @@ class domainChange(APIView):
             if check_domain or check_domain is not None:
                 return Response({'error': 'Domain Already Exist'}, status=status.HTTP_200_OK)
             else:
-                print(check_domain, ":::::::::::::::::::::::::::::::::::::::")
                 if check_domain is None:
                     domain = Domain.objects.get(tenant__user__phone_number=request.user.phone_number)
                     domain.domain = new_domain

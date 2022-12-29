@@ -21,7 +21,6 @@ class TenantAdmin(TenantAdminMixin, admin.ModelAdmin):
 
 admin.site.register(TenantSubscription)
 admin.site.register(SubscriptionTransaction)
-
 admin.site.register(ALLTemplate)
 admin.site.register(TenantTemplate)
 admin.site.register(OtpWallet)

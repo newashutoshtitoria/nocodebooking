@@ -68,3 +68,4 @@ def createcompanynocelery(data):
             User.objects.create_superuser(phone_number=user.phone_number, name=user.name, password=password)
 
         return True
+    return False

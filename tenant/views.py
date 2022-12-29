@@ -20,25 +20,21 @@ from rest_framework import generics, viewsets, mixins
 class createCompany(APIView):
     serializer_class = TenantSerializer
     permission_classes = (permissions.IsAuthenticated,)
-
     def post(self, request, *args, **kwargs):
         schema_name = connection.schema_name
         if schema_name == 'public':
             serializer = TenantSerializer(data=request.data)
-
             if serializer.is_valid(raise_exception=True):
                 schema_name = serializer.validated_data['schema_name']
                 user = request.user
                 company_name = serializer.validated_data['company_name']
                 password = serializer.validated_data['password']
-
                 data = {
                     'schema_name': schema_name,
                     'user': user.id,
                     'company_name': company_name,
                     'password': password
                 }
-
                 #without celery
                 if createcompanynocelery(data):
                     return Response({'info': 'Successfully signed-up'}, status=status.HTTP_201_CREATED)
@@ -54,17 +50,14 @@ class createCompany(APIView):
 class tenatsubscription(APIView):
     serializer_class = TenantSubscriptionSerializer
     permission_classes = (permissions.IsAuthenticated,)
-
     def post(self, request, *args, **kwargs):
         schema_name = connection.schema_name
         if schema_name == 'public':
             serializer = TenantSubscriptionSerializer(data=request.data)
-
             if serializer.is_valid(raise_exception=True):
                 subscription_obj = serializer.validated_data['subscription']
                 amountpaid = serializer.validated_data['amountpaid']
                 user_s = request.user
-
                 #get schema name
                 try:
                     check_user_teanant = user_s.tenant_user
@@ -100,6 +93,53 @@ class tenatsubscription(APIView):
 
                             )
                             return Response({'message': 'Successfully'}, status= status.HTTP_201_CREATED)
+                    else:
+                        new_subscription = TenantSubscription.objects.create(user=user_s,
+                                                                             teant_attched=check_user_teanant,
+                                                                             subscription=subscription_obj)
+                        new_subscription.payment = True
+                        new_subscription.save()
+
+                        # creating transaction for history
+
+                        SubscriptionTransaction.objects.create(
+                            user=user_s,
+                            teant_attched=check_user_teanant,
+                            subscription=subscription_obj,
+                            amount=subscription_obj.cost,
+                            amount_paid=amountpaid,
+
+                        )
+                        return Response({'message': 'Successfully'}, status=status.HTTP_201_CREATED)
+
+                return Response({'error':'User have no Tenant'}, status= status.HTTP_406_NOT_ACCEPTABLE)
+
+    def get(self, request, *args, **kwargs):
+        schema_name = connection.schema_name
+        if schema_name == 'public':
+            user_s = request.user
+            # get schema name
+            try:
+                check_user_teanant = user_s.tenant_user
+            except:
+                check_user_teanant = None
+
+            if check_user_teanant or check_user_teanant is not None:
+                # check subscription plan
+                try:
+                    tenant_sub_plan = check_user_teanant.teant_subscriptions
+                except:
+                    tenant_sub_plan = None
+
+                if tenant_sub_plan:
+                    if tenant_sub_plan.date_billing_end - timezone.now() >= timedelta(days=0, hours=0, minutes=0,
+                                                                                      seconds=0):
+                        validity_time = tenant_sub_plan.date_billing_end - timezone.now()
+                        return Response({'message': 'You Already have plan', 'subscription_plane':tenant_sub_plan.subscription.plan.plan_name,
+                                         'validity_time':str(validity_time)
+                                         }, status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'You have no active plan'}, status = status.HTTP_402_PAYMENT_REQUIRED)
 
 
 class TenantTemplateView(viewsets.ModelViewSet):
