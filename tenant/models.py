@@ -146,7 +146,12 @@ class OtpWallet(models.Model):
     def save(self, *args, **kwargs):
         schema_name = connection.schema_name
         if schema_name == 'public':
-            if self.__current_credit or not None:
-                self.total_otp_credit =self.__current_credit + self.total_otp_credit
-            super(OtpWallet, self).save(*args, **kwargs)
+            if self.pk is None:
+                if self.__current_credit or not None:
+                    self.total_otp_credit =  self.total_otp_credit
+                    super(OtpWallet, self).save(*args, **kwargs)
+            else:
+                if self.__current_credit or not None:
+                    self.total_otp_credit = self.__current_credit + self.total_otp_credit
+                    super(OtpWallet, self).save(*args, **kwargs)
 

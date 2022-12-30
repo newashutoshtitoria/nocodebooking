@@ -17,4 +17,7 @@ urlpatterns = [
     #chnage domain name of an tenant
     re_path(r'^domainchange/$', appviews.domainChange.as_view(), name='domainchange'),
 
+    #get all users (customers) of in a tenant for tenant admin
+    re_path(r'^alluser_in_tenant/$', appviews.alluser_in_tenant.as_view(), name='alluser_in_tenant'),
+
 ]

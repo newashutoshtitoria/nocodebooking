@@ -18,8 +18,10 @@ from django_tenants.utils import schema_context
 from django.contrib.auth import login, logout
 from tenant.models import Domain
 from core.settings import domain_choices
-
-
+from rest_framework.pagination import LimitOffsetPagination
+from django.db.models import Q
+from .commonfun import CalculateDateTime
+from .mypagination import NumberUserPagination
 
 class tenantuserSignup(APIView):
     """
@@ -300,8 +302,36 @@ class domainChange(APIView):
                     domain.save()
                     return Response({'Success': 'Domain Created', 'domain': serializer.validated_data['domain']},
                                     status=status.HTTP_201_CREATED)
-                return Response({'error': 'Not Admin, '},
+                return Response({'error': 'Not Admin'},
                                 status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+class alluser_in_tenant(APIView, NumberUserPagination):
+    """
+    views for get all users in an tenant
+    """
+    serializer_class = UserDetailSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        with schema_context('public'):
+            user_s = request.user
+            # get schema name
+            try:
+                check_user_teanant = user_s.tenant_user
+            except:
+                check_user_teanant = None
+            if check_user_teanant or check_user_teanant is not None:
+                with schema_context(check_user_teanant.schema_name):
+                    users = User.objects.filter(Q(active=True) & Q(admin=False))
+                    results = self.paginate_queryset(users, request, view=self)
+                    serializer = UserDetailSerializer(results, many=True)
+                    return self.get_paginated_response(serializer.data)
+            else:
+                return Response({'error': 'Not an Tenant User'},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 

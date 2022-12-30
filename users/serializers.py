@@ -242,3 +242,11 @@ class DomainSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         return data
+
+
+class UserDetailSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('id','phone_number','name','date_joined')
+        # fields='__all__'
