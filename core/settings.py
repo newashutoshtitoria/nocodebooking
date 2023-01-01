@@ -155,8 +155,8 @@ DATABASES = {
         'NAME': 'postgres',
         # set your user details
         'USER': 'dbmasteruser',
-        'PASSWORD': '2M0SnLXCno{O%bk2OK`cFzJ22+n$P.qS',
-        'HOST': 'ls-8fbc29ae16a4761c93feb220a387aedf5dc55467.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
+        'PASSWORD': 'cFU3*JOT2[&^5;Qm-l*|,SBP]cFoE8VE',
+        'HOST': 'ls-e2dd88bab2db4427e0d6fca973cd696b22368221.cnei1qspfe2f.ap-south-1.rds.amazonaws.com',
         'POST': '5432'
     }
 }

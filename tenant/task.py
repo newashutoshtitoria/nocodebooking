@@ -35,8 +35,8 @@ def createcompany(data):
         domain.save()
 
 
-        with schema_context(schema_name):
-            User.objects.create_superuser(phone_number=user.phone_number, name=user.name, password=password)
+        # with schema_context(schema_name):
+        #     User.objects.create_superuser(phone_number=user.phone_number, name=user.name, password=password)
 
         return True
 
