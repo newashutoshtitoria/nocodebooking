@@ -85,7 +85,7 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 
-    'ALGORITHM': 'HS512',
+    'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,
 
@@ -146,6 +146,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 
 #Production database
+
 
 DATABASES = {
     'default': {
