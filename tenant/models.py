@@ -42,6 +42,7 @@ class ALLTemplate(models.Model):
 class TenantTemplate(models.Model):
     templates = models.ForeignKey(ALLTemplate, null=True, on_delete=models.CASCADE, related_name='teant_attached_template')
     teant_attched = models.OneToOneField(Tenant, null=True, on_delete=models.CASCADE, related_name='teant_template')
+    image_banner = models.ImageField(upload_to='bannerimages/', null=True, blank=True)
     date = models.DateTimeField(default=datetime.now(),blank=True,null=True,verbose_name='start date')
     active = models.BooleanField(default=False)
 
