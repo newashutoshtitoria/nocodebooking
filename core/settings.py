@@ -80,8 +80,8 @@ MIDDLEWARE = [
 
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=10),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=100),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=100),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 
@@ -145,7 +145,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
-#local database
+#Production database
 
 DATABASES = {
     'default': {
@@ -162,7 +162,7 @@ DATABASES = {
 }
 
 
-#Production Db
+#local Db
 
 # DATABASES = {
 #     'default': {
@@ -172,8 +172,8 @@ DATABASES = {
 #         'NAME': 'postgres',
 #         # set your user details
 #         'USER': 'dbmasteruser',
-#         'PASSWORD': 'BE*F[*nLl1P[yc5N;mGgw|32S[h<rj8J',
-#         'HOST': 'ls-ff73780815a60734e0e9b4c84dfa044e8578fb5b.cyfggzezafvq.ap-south-1.rds.amazonaws.com',
+#         'PASSWORD': 'g]kz0AC;Kv];R&>gKW~A[Ov1*%2*CE|9',
+#         'HOST': 'ls-dc47aadc1d5bb928aac14ac72453f456b0f775e0.cnei1qspfe2f.ap-south-1.rds.amazonaws.com',
 #         'POST': '5432'
 #     }
 # }
