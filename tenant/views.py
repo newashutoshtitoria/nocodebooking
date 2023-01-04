@@ -28,12 +28,10 @@ class createCompany(APIView):
                 schema_name = serializer.validated_data['schema_name']
                 user = request.user
                 company_name = serializer.validated_data['company_name']
-                password = serializer.validated_data['password']
                 data = {
                     'schema_name': schema_name,
                     'user': user.id,
                     'company_name': company_name,
-                    'password': password
                 }
                 #without celery
                 if createcompanynocelery(data):

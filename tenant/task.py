@@ -17,7 +17,6 @@ def createcompany(data):
     schema_name = data['schema_name']
     user = User.objects.get(id=data['user'])
     company_name = data['company_name']
-    password = data['password']
 
     try:
         check_tenant = user.tenant_user
@@ -46,7 +45,6 @@ def createcompanynocelery(data):
     schema_name = data['schema_name']
     user = User.objects.get(id=data['user'])
     company_name = data['company_name']
-    password = data['password']
 
     try:
         check_tenant = user.tenant_user
@@ -63,9 +61,9 @@ def createcompanynocelery(data):
         domain.is_primary = True
         domain.save()
 
-
-        with schema_context(schema_name):
-            User.objects.create_superuser(phone_number=user.phone_number, name=user.name, password=password)
+        #
+        # with schema_context(schema_name):
+        #     User.objects.create_superuser(phone_number=user.phone_number, name=user.name, password=password)
 
         return True
     return False
