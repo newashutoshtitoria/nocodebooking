@@ -50,4 +50,4 @@ class OTPSerializer(serializers.ModelSerializer):
         if len(str(otp)) != 4:
             raise ValidationError({"error":"Invalid OTP"})
         else:
-            return
+            return data
