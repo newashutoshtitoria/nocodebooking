@@ -18,7 +18,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('phone_number', 'name')
+        fields = ('phone_number', 'name', 'otp_fetching_metching')
 
     def validate(self, data):
         phone = data.get('phone_number')
