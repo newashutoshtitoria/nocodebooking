@@ -8,6 +8,7 @@ from messages.SendOTP import sendotp
 from rest_framework.response import Response
 from datetime import timedelta
 from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from users.models import OTP
 from django.db import connection
