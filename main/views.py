@@ -11,6 +11,7 @@ from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from users.models import OTP
+from users.token import get_tokens_for_user
 from django.db import connection
 from django_tenants.utils import schema_context
 
