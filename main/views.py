@@ -73,7 +73,7 @@ class Activate(APIView):
                     receiver.active = True
                     receiver.save()
                 otp.delete()
-                refresh, access = get_tokens_for_user(receiver)
+                refresh, access = get_tokens_for_user(receiver, schema_name)
                 return Response({'message': 'Successful', 'refresh': refresh, 'access': access})
             else:
                 raise ValidationError({'error': 'Invalid OTP'})
