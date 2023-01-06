@@ -77,3 +77,26 @@ class Activate(APIView):
                 return Response({'message': 'Successful', 'refresh': refresh, 'access': access})
             else:
                 raise ValidationError({'error': 'Invalid OTP'})
+
+
+class ResendOtp(APIView):
+    """
+    views for resend the otp.
+    """
+    serializer_class = OTPSerializer
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, user_id, *args, **kwargs):
+        schema_name = connection.schema_name
+        with schema_context(schema_name):
+            try:
+                user = User.objects.get(id=user_id)
+            except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+                user = None
+            if user is None:
+                raise ValidationError({'error': 'Not a valid user!'})
+            otp_fetching_metching = ''
+            msg_thread = Thread(target=sendotp, args=(user,schema_name, otp_fetching_metching))
+            msg_thread.start()
+            return Response({'info': 'Resent OTP', 'user_id': user.id, 'name': user.name},
+                            status=status.HTTP_201_CREATED)
