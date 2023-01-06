@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-import re
+from users.models import OTP
 from django.core.validators import RegexValidator
 from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueValidator
@@ -14,6 +14,7 @@ User = get_user_model()
 class UserSignupSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(required=True, allow_blank=False, allow_null=False,)
     name = serializers.CharField(required=True, allow_null=False, allow_blank=False)
+    otp_fetching_metching = serializers.CharField()
 
     class Meta:
         model = User
@@ -35,3 +36,18 @@ class UserSignupSerializer(serializers.ModelSerializer):
             else:
                 return data
         raise ValidationError({"error": "Invalid Phone number"})
+
+class OTPSerializer(serializers.ModelSerializer):
+    """
+    serializer for otp
+    """
+    class Meta:
+        model = OTP
+        fields = ['otp']
+
+    def validate(self, data):
+        otp = data.get('otp')
+        if len(str(otp)) != 4:
+            raise ValidationError({"error":"Invalid OTP"})
+        else:
+            return
