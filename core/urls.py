@@ -19,6 +19,7 @@ urlpatterns = [
     path('appuser/', include('users.appurl')),
     path('usersapp/', include('users.urls')),
     path('company/', include('tenant.urls')),
+    path('firsttenant/', include('main.urls')),
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
 ]
