@@ -48,29 +48,31 @@ class Activate(APIView):
     serializer_class = OTPSerializer
 
     def post(self, request, user_id,*args,**kwargs):
-        serializer = OTPSerializer(data=request.data)
-        code_otp = request.data['otp']
-        try:
-            otp = OTP.objects.get(receiver=user_id)
-        except(TypeError, ValueError, OverflowError, OTP.DoesNotExist):
-            otp = None
-        try:
-            receiver = User.objects.get(id=user_id)
-        except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-            receiver = None
-        if otp is None or receiver is None:
-            raise ValidationError({'error': 'you are not a valid user'})
-        elif timezone.now() - otp.sent_on >= timedelta(days=0, hours=0, minutes=1, seconds=0):
-            # otp.delete()
-            raise ValidationError({'error': 'OTP expired!'})
+        schema_name = connection.schema_name
+        with schema_context('public'):
+            serializer = OTPSerializer(data=request.data)
+            code_otp = request.data['otp']
+            try:
+                otp = OTP.objects.get(receiver=user_id)
+            except(TypeError, ValueError, OverflowError, OTP.DoesNotExist):
+                otp = None
+            try:
+                receiver = User.objects.get(id=user_id)
+            except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+                receiver = None
+            if otp is None or receiver is None:
+                raise ValidationError({'error': 'you are not a valid user'})
+            elif timezone.now() - otp.sent_on >= timedelta(days=0, hours=0, minutes=1, seconds=0):
+                # otp.delete()
+                raise ValidationError({'error': 'OTP expired!'})
 
-        if str(otp.otp) == str(code_otp):
-            if receiver.active is False:
-                serializer.is_valid(raise_exception=True)
-                receiver.active = True
-                receiver.save()
-            otp.delete()
-            refresh, access = get_tokens_for_user(receiver)
-            return Response({'message': 'Successful', 'refresh': refresh, 'access': access})
-        else:
-            raise ValidationError({'error': 'Invalid OTP'})
+            if str(otp.otp) == str(code_otp):
+                if receiver.active is False:
+                    serializer.is_valid(raise_exception=True)
+                    receiver.active = True
+                    receiver.save()
+                otp.delete()
+                refresh, access = get_tokens_for_user(receiver)
+                return Response({'message': 'Successful', 'refresh': refresh, 'access': access})
+            else:
+                raise ValidationError({'error': 'Invalid OTP'})
