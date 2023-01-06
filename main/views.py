@@ -5,8 +5,11 @@ from rest_framework import permissions, status
 from main.models import *
 from main.serializers import UserSignupSerializer
 from messages.SendOTP import sendotp
+from django.contrib.auth import get_user_model
 from django.db import connection
 from django_tenants.utils import schema_context
+
+User = get_user_model()
 
 class Signup(APIView):
     """
