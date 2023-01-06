@@ -49,7 +49,7 @@ class Activate(APIView):
 
     def post(self, request, user_id,*args,**kwargs):
         schema_name = connection.schema_name
-        with schema_context('public'):
+        with schema_context(schema_name):
             serializer = OTPSerializer(data=request.data)
             code_otp = request.data['otp']
             try:
