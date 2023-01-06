@@ -6,8 +6,8 @@ from main.models import *
 from main.serializers import UserSignupSerializer, OTPSerializer
 from messages.SendOTP import sendotp
 from rest_framework.response import Response
-from django.utils import timezone
 from datetime import timedelta
+from django.utils import timezone
 from django.contrib.auth import get_user_model
 from users.models import OTP
 from django.db import connection
