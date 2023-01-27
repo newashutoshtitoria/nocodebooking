@@ -15,7 +15,9 @@ from subscriptionplansg.models import *
 from django.utils.decorators import method_decorator
 from django.db.transaction import atomic
 from rest_framework import generics, viewsets, mixins
-
+from django_tenants.utils import remove_www
+from django.views.generic import TemplateView
+from django.shortcuts import render
 
 class createCompany(APIView):
     serializer_class = TenantSerializer
@@ -279,4 +281,21 @@ class tenatotpView(viewsets.ModelViewSet):
             tenant_template_obj.delete()
             return Response({'message': 'deleted'})
 
+
+
+
+class Home(TemplateView):
+    def get(self, request, *args, **kwargs):
+        hostname_without_port = remove_www(request.get_host().split(':')[0])
+        domain = Domain.objects.get(domain=hostname_without_port)
+        if domain.tenant.schema_name == 'public':
+            template = 'index.html'
+        else:
+            template = 'index.html'
+
+        context = {
+            'tenant_obj': domain.tenant.company_name
+        }
+
+        return render(request, template, context )
 

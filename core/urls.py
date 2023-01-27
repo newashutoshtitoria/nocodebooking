@@ -5,7 +5,8 @@ from django.conf import settings
 from rest_framework_simplejwt import views as jwt_views
 from .tenantspecifictoken import MyTokenObtainPairView
 from rest_framework.routers import DefaultRouter
-from tenant.views import TenantTemplateView, tenatotpView
+from tenant.views import TenantTemplateView, tenatotpView, Home
+
 
 
 router = DefaultRouter()
@@ -22,7 +23,10 @@ urlpatterns = [
     path('firsttenant/', include('main.urls')),
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
+    re_path(r"^.*/$", Home.as_view(), name='home'),
+    re_path(r"^$", Home.as_view(), name='home'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
