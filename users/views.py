@@ -72,7 +72,7 @@ class tenantuserSignup(APIView):
 
                 user = User.objects.create_public_user(phone_number=phone_number, name=name, password=password)
                 otp_fetching_metching = request.data['otp_fetching_metching']
-                msg_thread = Thread(target=sendotp, args=(user, schema_name,otp_fetching_metching ))
+                msg_thread = Thread(target=sendotp, args=(user, schema_name,otp_fetching_metching))
                 msg_thread.start()
                 user.save()
                 return Response({'info': 'Successfully signed-up', 'user_id': user.id, 'name': name},
