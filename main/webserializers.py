@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from main.models import Category, UserAddress, PriceTag, Package
+from main.models import Category, UserAddress, PriceTag, Package, Variants, Checkout, PackageCheckout
 import re
 from rest_framework.exceptions import ValidationError
 from django.db import connection
@@ -12,15 +12,33 @@ User = get_user_model()
 class PackageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Package
-        fields = ('id', )
+        fields = "__all__"
 
 class CategorySerializer(serializers.ModelSerializer):
-    packages = PackageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Category
-        fields = ('id', 'packages')
+        fields = "__all__"
         read_only_fields = ('status',)
+
+
+class VariantsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    variant = serializers.CharField()
+    original_price = serializers.FloatField()
+    offering_price = serializers.FloatField()
+
+class AddOnsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    add_on_name = serializers.CharField()
+    additional_price = serializers.FloatField()
+
+class PriceTagSerializer(serializers.Serializer):
+    price_tag = serializers.CharField()
+
+
+
+
 
 
 
@@ -109,3 +127,11 @@ class UserAddressSerializer(serializers.ModelSerializer):
         if re.match(regex, pincode):
             return data
         raise ValidationError({"error": "Invalid pincode   "})
+
+
+
+
+
+
+
+

@@ -51,3 +51,4 @@ class OTPSerializer(serializers.ModelSerializer):
             raise ValidationError({"error":"Invalid OTP"})
         else:
             return data
+

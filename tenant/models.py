@@ -10,6 +10,8 @@ from django.core.validators import MinLengthValidator
 class Tenant(TenantMixin):
     user = models.OneToOneField(AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name='tenant_user')
     company_name = models.CharField(max_length=50, null=True, blank=True)
+    company_logo = models.ImageField(upload_to="logo", null=True, blank=True)
+
     is_active = models.BooleanField(default=False, blank=True)
     created_on = models.DateField(auto_now_add=True)
     auto_create_schema = True
@@ -156,3 +158,21 @@ class OtpWallet(models.Model):
                     self.total_otp_credit = self.__current_credit + self.total_otp_credit
                     super(OtpWallet, self).save(*args, **kwargs)
 
+
+
+class AccountInformation(models.Model):
+    teant_attched = models.OneToOneField(Tenant, null=True, on_delete=models.CASCADE, related_name='teant_account_information')
+    about = models.TextField(default="", null=True, blank=True)
+    location = models.TextField(default="", null=True, blank=True)
+    instagram = models.CharField(max_length=50, null=True, blank=True)
+    facebook = models.CharField(max_length=50, null=True, blank=True)
+    youtube = models.CharField(max_length=50, null=True, blank=True)
+    whatsapp = models.CharField(unique=True, max_length=13)
+    bussiness_category = models.CharField(null=True, blank=True, max_length=50)
+    email = models.CharField(null=True, blank=True, max_length=30)
+
+    def __str__(self):
+        try:
+            return str(self.teant_attched.company_name)
+        except:
+            return ''

@@ -19,6 +19,8 @@ urlpatterns = [
     re_path(r'^me/$', webviews.ProfileView.as_view(), name='profile'),
 
     re_path('categories/', webviews.CategoryPackageView.as_view(), name='category_package_view'),
+    re_path('alldata/', webviews.AlldataView.as_view(), name='alldata_view'),
 
+    re_path('checkouts/', webviews.CheckoutCreateAPIView.as_view(), name='checkout-list'),
 
-    ]
+]

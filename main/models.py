@@ -1,5 +1,6 @@
 from django.db import models
 from core.settings import AUTH_USER_MODEL
+from datetime import date
 
 class Category(models.Model):
     """
@@ -9,9 +10,9 @@ class Category(models.Model):
     icon = models.ImageField(null=False, blank=False, upload_to='Category_Icon')
     status = models.BooleanField(default=True)
 
-
     def __str__(self):
         return self.category
+
 
 class PriceTag(models.Model):
     """
@@ -100,6 +101,17 @@ class Carousel(models.Model):
     def __str__(self):
         return str(self.id)
 
+    @property
+    def get_select_type(self):
+        lst =[]
+        try:
+            for package in eval(self.select_type_ids):
+                lst.append(Package.objects.get(id=package))
+        except:
+            pass
+        return lst
+
+
 
 Coupon_Type = (
     ('percentage_discount', 'percentage_discount'),
@@ -142,6 +154,30 @@ class DiscountedCoupons(models.Model):
     def __str__(self):
         return self.title
 
+    def check_validity(self, amount):
+        if self.from_date <= date.today() and self.to_date >=date.today() and self.active:
+            if self.minimum_order_value:
+                if self.minimum_order_value <=amount:
+                    if self.select_coupon_type == 'percentage_discount':
+                        newval = amount*float(self.flat_percent_value)/100
+                    elif self.select_coupon_type == 'flat_discount':
+                        newval = amount-float(self.flat_percent_value)
+                else:
+                    newval = amount
+
+            if self.minimum_order_value and self.maximum_order_value:
+                if self.minimum_order_value <=amount and self.maximum_order_value >=amount:
+                    if self.select_coupon_type == 'percentage_discount':
+                        newval = amount*float(self.flat_percent_value)/100
+                    elif self.select_coupon_type == 'flat_discount':
+                        newval = amount-float(self.flat_percent_value)
+                else:
+                    newval = amount
+
+            return newval
+        raise ValueError("Discount Error")
+
+
 
 ADDRESS_TYPE = {
     ('Home', 'Home'),
@@ -169,6 +205,7 @@ class UserAddress(models.Model):
 
 
 PACKAGE_STAGES = (
+    ("Pending", "Pending"),
     ("Accepted", "Accepted"),
     ("Completed", "Completed"),
     ("Cancelled", "Cancelled"),
@@ -191,9 +228,8 @@ class Checkout(models.Model):
 
 
 
-
 class PackageCheckout(models.Model):
-    checkout = models.ForeignKey(Checkout, on_delete=models.CASCADE, blank=True, null=True, related_name='checkout_packagecheckout')
-    packages = models.ManyToManyField(Package, blank=True, null=True, related_name='packages_packagescheckout')
-    variants = models.ManyToManyField(Variants,  blank=True, null=True, related_name='variants_packagecheckouts')
+    checkout = models.ForeignKey(Checkout, on_delete=models.CASCADE, blank=True, null=True, related_name='package_checkouts')
+    packages = models.ForeignKey(Package,on_delete=models.CASCADE, blank=True, null=True, related_name='packages_packagescheckout')
+    variants = models.ForeignKey(Variants,on_delete=models.CASCADE,  blank=True, null=True, related_name='variants_packagecheckouts')
     addon = models.ManyToManyField(AddOns, blank=True, null=True, related_name='addon_packagecheckout')
