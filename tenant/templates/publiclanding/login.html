@@ -1,0 +1,37 @@
+{% extends 'publiclanding/base.html' %}
+{% load static %}
+{% block login %}
+<section data-bs-version="5.1" class="header3 cid-tdxNMUdm2F" id="header03-2">
+   <div class="container">
+      <div class="row justify-content-center">
+         <div class="col-10 col-lg-6 col-md-6 col-sm-12">
+            <div class="text-wrapper align-left">
+               {% csrf_token %}
+               <form action="" method="post">
+                  <div class="form-group">
+                     <label for="phone" class="text-white">Phone Number:</label>
+                     <input type="tel" class="form-control" name="phone" id="phone" placeholder="Enter your phone number">
+                  </div>
+                  <div class="form-group">
+                     <label for="password" class="text-white">Password:</label>
+                     <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password">
+                  </div>
+                  <button type="submit" class="btn text-white" style="background-color:#1e2330;">Submit</button>
+               </form>
+            </div>
+         </div>
+      </div>
+   </div>
+</section>
+<section data-bs-version="5.1" class="footer3 cid-tdxO5MWA8J" once="footers" id="footer03-9">
+   <div class="container">
+      <div class="media-container-row align-center mbr-white">
+         <div class="col-12">
+            <p class="mbr-text mb-0 mbr-fonts-style display-7">
+               © Copyright 2023 Wofo24 Technologies Pvt Ltd - All Rights Reserved
+            </p>
+         </div>
+      </div>
+   </div>
+</section>
+{% endblock login %}

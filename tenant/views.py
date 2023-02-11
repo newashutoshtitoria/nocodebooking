@@ -289,7 +289,7 @@ class Home(TemplateView):
         hostname_without_port = remove_www(request.get_host().split(':')[0])
         domain = Domain.objects.get(domain=hostname_without_port)
         if domain.tenant.schema_name == 'public':
-            template = 'index.html'
+            template = 'publiclanding/index.html'
         else:
             template = 'index.html'
 

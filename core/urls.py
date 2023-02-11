@@ -22,6 +22,7 @@ urlpatterns = [
     path('usersapp/', include('users.urls')),
     path('company/', include('tenant.urls')),
     # path('firsttenant/', include('main.urls')),
+    path('webapp/', include('tenant.landingurl')),
     path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(), name='token_refresh'),
     re_path(r"^.*/$", Home.as_view(), name='home'),
