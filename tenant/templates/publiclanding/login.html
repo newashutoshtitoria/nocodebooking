@@ -6,8 +6,8 @@
       <div class="row justify-content-center">
          <div class="col-10 col-lg-6 col-md-6 col-sm-12">
             <div class="text-wrapper align-left">
-               {% csrf_token %}
-               <form action="" method="post">
+
+               <form >
                   <div class="form-group">
                      <label for="phone" class="text-white">Phone Number:</label>
                      <input type="tel" class="form-control" name="phone" id="phone" placeholder="Enter your phone number">
@@ -35,3 +35,28 @@
    </div>
 </section>
 {% endblock login %}
+
+
+<script>
+   document.getElementById("submit").addEventListener("click", function() {
+  var phone = document.getElementById("phone").value;
+  var password = document.getElementById("password").value;
+
+  axios.post("http://localhost:8000/appuser/admin_login/", {
+    phone: phone,
+    password: password
+  })
+    .then(function(response) {
+      console.log(response.data);
+    })
+    .catch(function(error) {
+      console.error(error);
+    });
+});
+In the above code, a submit button is added to the form and a click event listener is attached to it. When the submit button is clicked, the values of the phone and password inputs are retrieved and passed as the request body in the Axios post method. The response from the API is logged to the console if the request is successful, or an error is logged to the console if the request fails.
+
+Note that
+
+
+
+</script>
